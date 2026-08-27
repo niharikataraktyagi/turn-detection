@@ -1,0 +1,42 @@
+/Users/niharikatyagi/Desktop/eot-detector/scripts/09_onnx_latency.py:107: DeprecationWarning: You are using the legacy TorchScript-based ONNX export. Starting in PyTorch 2.9, the new torch.export-based ONNX exporter has become the default. Learn more about the new export logic: https://docs.pytorch.org/docs/stable/onnx_export.html. For exporting control flow: https://pytorch.org/tutorials/beginner/onnx/export_control_flow_model_to_onnx_tutorial.html
+  torch.onnx.export(model, (ids, am, pr), onnx_path, dynamo=False, **common)
+/Users/niharikatyagi/Desktop/eot-detector/.venv/lib/python3.12/site-packages/transformers/modeling_attn_mask_utils.py:196: TracerWarning: torch.tensor results are registered as constants in the trace. You can safely ignore this warning if you use this function to create tensors out of constant variables that would be the same every time you call this function. In any other case, this might cause the trace to be incorrect.
+  inverted_mask = torch.tensor(1.0, dtype=dtype) - expanded_mask
+WARNING:root:Please consider to run pre-processing before quantization. Refer to example: https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+torch threads = 1  (single core, as in production)
+
+benchmark input: 10 tokens (unpadded)  "I would like to cancel my order number"
+
+  exported via legacy TorchScript tracer
+variant              size     mean      p50      p95      p99
+------------------------------------------------------------
+PyTorch fp32        91.0M   10.00    9.69   13.74   22.70   (ms)
+ONNX fp32           90.6M    7.03    7.04    7.11    7.16   (ms)
+ONNX int8           22.9M    2.92    3.04    3.14    3.20   (ms)
+
+int8 speedup vs ONNX fp32 (p95): 2.26x   size 91M -> 23M
+
+--- accuracy after quantisation (never assume) ---
+  AUC fp32 0.8620   int8 0.8581
+  mean |logit delta| 0.1260
+  (prosody held constant here — this isolates the text encoder, which is
+   where >99% of the parameters and all the quantisation risk live)
+
+--- p95 latency vs sequence length (int8) ---
+  tokens    p95 ms
+       8      2.11
+      16      3.82
+      24      5.81
+      32      6.96
+      48     10.56
+  padding to 48 instead of ~16 costs 2.8x  -> use dynamic padding
+
+--- READ THIS BEFORE QUOTING THE NUMBERS ---
+  machine: arm64 / Darwin
+  ONNX Runtime's CPU kernels are tuned for x86-64 Linux servers, which is
+  where a voice agent actually runs. On Apple Silicon (ARM) PyTorch uses
+  Apple's own tuned BLAS and can beat ORT. The int8-vs-fp32 RATIO is the
+  portable result (3-4x, 4x smaller); the absolute ranking of backends is
+  hardware-specific. Re-run this on the deployment target before quoting it.
+
+wrote /Users/niharikatyagi/Desktop/eot-detector/scripts/../artifacts/latency.json, endpointer_int8.onnx

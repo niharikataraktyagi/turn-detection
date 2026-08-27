@@ -1,0 +1,125 @@
+==========================================================================
+REPLICATION: Kelterer et al. 2023 (Austrian German) -> English (AMI)
+==========================================================================
+excluded: {'overlap': 1377, 'questions': 118, 'other_labels': 222}
+analysis set: 3785 points, 32 speakers, 8 groups
+label
+com-hold    2224
+in-hold     1225
+change       336
+
+their N: 837  (in-hold 222 / com-hold 368 / change 247)
+
+--------------------------------------------------------------------------
+RANDOM FOREST — pairwise, feature-ranking instrument (their Table 1/2)
+--------------------------------------------------------------------------
+comparison                   F1(a)   F1(b)  balAcc |  balAcc
+                           --- speaker-disjoint --- |  random
+in-hold vs com-hold          0.312   0.685   0.503 |   0.510
+in-hold vs change            0.842   0.466   0.668 |   0.660
+com-hold vs change           0.907   0.342   0.627 |   0.603
+
+  balanced-accuracy inflation from random (speaker-leaking) splits: -0.009
+  (0.500 = chance. this is speaker leakage measured, not asserted)
+  ^ this is speaker leakage measured, not asserted
+
+--------------------------------------------------------------------------
+TOP FEATURES per comparison (their Table 2)
+--------------------------------------------------------------------------
+
+in-hold vs com-hold
+    i_med                  0.0725
+    art_rate               0.0697
+    i_slope                0.0690
+    i_std                  0.0679
+    i_max                  0.0668
+    i_tmax                 0.0654
+
+in-hold vs change
+    art_rate               0.1789
+    i_std                  0.0830
+    i_max                  0.0772
+    i_slope                0.0687
+    i_med                  0.0683
+    i_tmax                 0.0537
+
+com-hold vs change
+    art_rate               0.1791
+    i_std                  0.0831
+    i_max                  0.0811
+    i_slope                0.0662
+    i_med                  0.0644
+    i_tmax                 0.0523
+
+--------------------------------------------------------------------------
+MIXED-EFFECTS CONTRASTS (speaker as random effect) — their §5
+--------------------------------------------------------------------------
+
+art_rate
+   means: in-hold=2.494  com-hold=2.539  change=4.185
+   in-hold   vs com-hold   coef=  +0.053  p=3.31e-01 ns
+   in-hold   vs change     coef=  +1.625  p=2.06e-65 ***
+   com-hold  vs change     coef=  +1.572  p=3.29e-67 ***
+
+i_med
+   means: in-hold=-0.271  com-hold=-0.304  change=-0.474
+   in-hold   vs com-hold   coef=  -0.031  p=7.93e-02 ns
+   in-hold   vs change     coef=  -0.212  p=1.33e-11 ***
+   com-hold  vs change     coef=  -0.181  p=1.52e-09 ***
+
+i_max
+   means: in-hold=1.102  com-hold=1.109  change=0.606
+   in-hold   vs com-hold   coef=  -0.005  p=9.34e-01 ns
+   in-hold   vs change     coef=  -0.465  p=1.41e-06 ***
+   com-hold  vs change     coef=  -0.460  p=5.61e-07 ***
+
+f0_range
+   means: in-hold=3.739  com-hold=3.927  change=4.033
+   in-hold   vs com-hold   coef=  +0.165  p=1.66e-01 ns
+   in-hold   vs change     coef=  +0.082  p=6.96e-01 ns
+   com-hold  vs change     coef=  -0.083  p=6.77e-01 ns
+
+f0_max
+   means: in-hold=1.671  com-hold=1.781  change=1.848
+   in-hold   vs com-hold   coef=  +0.065  p=6.22e-01 ns
+   in-hold   vs change     coef=  +0.121  p=6.02e-01 ns
+   com-hold  vs change     coef=  +0.056  p=8.00e-01 ns
+
+f0_slope
+   means: in-hold=-0.103  com-hold=-1.318  change=1.204
+   in-hold   vs com-hold   coef=  -1.852  p=6.43e-01 ns
+   in-hold   vs change     coef=  +1.644  p=8.12e-01 ns
+   com-hold  vs change     coef=  +3.496  p=5.95e-01 ns
+
+contour_curv_600
+   means: in-hold=22.652  com-hold=6.575  change=23.265
+   in-hold   vs com-hold   coef= -14.185  p=1.66e-01 ns
+   in-hold   vs change     coef= -11.101  p=5.31e-01 ns
+   com-hold  vs change     coef=  +3.084  p=8.54e-01 ns
+
+voiced_frac
+   means: in-hold=0.371  com-hold=0.377  change=0.310
+   in-hold   vs com-hold   coef=  -0.002  p=7.61e-01 ns
+   in-hold   vs change     coef=  -0.106  p=2.28e-16 ***
+   com-hold  vs change     coef=  -0.104  p=4.05e-17 ***
+
+==========================================================================
+PRE-REGISTERED HYPOTHESES (docs/04_replication_spec.md §7)
+==========================================================================
+H1  ArtR: change > com-hold > in-hold
+      4.185 > 2.539 > 2.494   -> REPLICATES   [p(ch,com)=3.3e-67, p(com,in)=3.3e-01]
+H2  Intensity: in-hold > change
+      -0.271 > -0.474   -> REPLICATES   [p=1.3e-11]
+H3  F0 range: com-hold highest
+      com=3.927 ch=4.033 in=3.739   -> does not replicate
+H5  com-hold vs change is the weakest separation
+      weakest = in-hold vs com-hold   -> does not replicate
+      (theirs: F1(change)=.40 in that pair — near chance)
+
+H6  (OURS, not in the paper) turn-ends are less modally voiced
+      voiced_frac: change=0.310 < com-hold=0.377, in-hold=0.371   [p=4.0e-17]
+      interpretation: creak / glottalisation at terminal juncture defeats
+      F0 tracking. Visible only because we kept unvoiced windows and
+      modelled missingness instead of dropping those rows.
+
+wrote CSVs to /Users/niharikatyagi/Desktop/eot-detector/scripts/../artifacts/

@@ -1,0 +1,56 @@
+  ES2002a: running total 416
+  ES2002b: running total 1223
+  ES2003a: running total 1514
+  ES2003b: running total 2323
+  IS1000a: running total 2916
+  IS1001a: running total 3256
+  IS1003b: running total 4006
+  TS3003a: running total 4523
+  TS3004a: running total 5005
+  TS3005a: running total 5502
+
+======================================================================
+decision points: 5502  ->  /Users/niharikatyagi/Desktop/eot-detector/scripts/../data/processed/decision_points.parquet
+speakers: 32   groups: 8
+dropped: {'no_next': 0, 'too_long': 57, 'no_text': 1029, 'undecidable': 48}
+
+THE 2x2
+syn_complete   False  True 
+floor_changes              
+False           1529   2711
+True             502    760 
+
+label
+com-hold     2711
+in-hold      1529
+change        760
+trail-off     502 
+
+overlap_at_end  (paper rule, EXCLUDED):  25.0%
+overlap_window  (0.6s, reported only):   29.8%
+overlap_at_end  False  True 
+label                       
+change            384    376
+com-hold         2257    454
+in-hold          1242    287
+trail-off         242    260
+questions (excluded from `change`, as in the paper):
+is_question  False  True 
+label                    
+change         683     77
+com-hold      2650     61
+in-hold       1506     23
+trail-off      474     28 
+
+resume / handover delay (s)   [EVALUATION VARIABLE]
+            count    25%    50%    75%    max
+label                                        
+change      760.0  0.320  0.768  1.664  9.728
+com-hold   2711.0  0.352  0.576  1.056  9.984
+in-hold    1529.0  0.352  0.576  1.056  8.704
+trail-off   502.0  0.340  0.772  1.856  9.216
+
+span length before the pause (s) — how much audio prosody actually gets
+25%    0.672
+50%    1.248
+75%    2.304

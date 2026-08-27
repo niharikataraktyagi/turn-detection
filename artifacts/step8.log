@@ -1,0 +1,44 @@
+5502 decision points  (1262 changes / 4240 holds)
+all predictions are speaker-disjoint out-of-fold
+
+system                           AUOC    FIR @ 500ms   latency @ 10% FIR
+--------------------------------------------------------------------------
+Fixed VAD threshold            0.4252          57.6%             1974 ms
+Text only                      0.3749          49.7%             1904 ms
+Prosody only                   0.3803          49.7%             1940 ms
+Text + prosody (fusion)        0.3499          43.7%             1810 ms
+
+--------------------------------------------------------------------------
+LATENCY AT MATCHED FALSE-INTERRUPTION RATE  (the number that matters)
+--------------------------------------------------------------------------
+ tolerated FIR   fixed VAD      text    fusion    saving vs fixed
+           10%       1974ms     1904ms     1810ms        164ms ( 8.3%)
+           15%       1552ms     1347ms     1288ms        264ms (17.0%)
+           20%       1232ms     1046ms      993ms        239ms (19.4%)
+           25%       1063ms      892ms      829ms        235ms (22.1%)
+           30%        932ms      771ms      714ms        218ms (23.4%)
+           40%        731ms      606ms      550ms        182ms (24.8%)
+
+  median latency saving at matched FIR: 226 ms
+  for scale: the median human inter-turn gap is ~200 ms (Stivers et al. 2009),
+  so this is on the order of one whole conversational beat per exchange.
+
+--------------------------------------------------------------------------
+NOTE ON ABSOLUTE LEVELS
+--------------------------------------------------------------------------
+  Absolute FIR is high across ALL systems because every VAD pause > 150 ms
+  in 4-party AMI meeting speech counts as a decision point, and the median
+  hold lasts 576 ms. Meeting speech pauses far more than a 2-party support
+  call. The comparison is controlled — identical decision points, identical
+  delays, identical policy family — so the RELATIVE gap transfers even though
+  the absolute level is domain-specific.
+
+fusion reduces mean false-interruption rate over the 0.15-1.5 s band
+by 17.7% relative to the fixed-threshold baseline.
+
+wrote /Users/niharikatyagi/Desktop/eot-detector/scripts/../artifacts/operating_curve.png
+
+--- a concrete operating point (tau_min=0.20, tau_max=1.40) ---
+  text     median latency  932 ms | p95 1265 ms | FIR  23.7% (1005/4240 holds)
+  fusion   median latency  880 ms | p95 1261 ms | FIR  23.4% (992/4240 holds)
+  fixed VAD at the SAME interruption rate (23.5%): median latency 1100 ms

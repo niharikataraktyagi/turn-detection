@@ -1,0 +1,75 @@
+/Users/niharikatyagi/Desktop/eot-detector/scripts/07_train.py:97: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /Users/runner/work/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:823.)
+  tot += float(loss) * len(y); n += len(y)
+5502 points · 8 groups · 22.9% changes · device=mps
+
+--- text ---
+    fold0 ep0  train 0.4867  val 0.4918  val AUC 0.763  (71s)
+    fold0 ep1  train 0.4284  val 0.5000  val AUC 0.766  (59s)
+    fold0 ep2  train 0.3813  val 0.5166  val AUC 0.748  (52s)
+    fold0 ep3  train 0.3431  val 0.5630  val AUC 0.754  (58s)
+    fold0 temperature T=1.084  test n=1223
+    fold1 ep0  train 0.4960  val 0.4968  val AUC 0.753  (76s)
+    fold1 ep1  train 0.4374  val 0.5088  val AUC 0.750  (71s)
+    fold1 ep2  train 0.3867  val 0.5339  val AUC 0.725  (51s)
+    fold1 ep3  train 0.3320  val 0.6560  val AUC 0.718  (41s)
+    fold1 temperature T=0.906  test n=1582
+    fold2 ep0  train 0.4659  val 0.6715  val AUC 0.730  (43s)
+    fold2 ep1  train 0.4025  val 0.6373  val AUC 0.718  (41s)
+    fold2 ep2  train 0.3531  val 0.7096  val AUC 0.694  (41s)
+    fold2 ep3  train 0.3046  val 0.7247  val AUC 0.679  (42s)
+    fold2 temperature T=1.686  test n=1247
+    fold3 ep0  train 0.4914  val 0.5024  val AUC 0.761  (42s)
+    fold3 ep1  train 0.4388  val 0.5101  val AUC 0.750  (39s)
+    fold3 ep2  train 0.3860  val 0.5371  val AUC 0.714  (39s)
+    fold3 ep3  train 0.3301  val 0.6238  val AUC 0.744  (39s)
+    fold3 temperature T=1.164  test n=1450
+  text:  OOF AUC 0.7514   AP 0.4829   ECE 0.0459
+
+--- prosody ---
+    fold0 ep0  train 0.5572  val 0.5275  val AUC 0.702  (3s)
+    fold0 ep1  train 0.4704  val 0.5263  val AUC 0.700  (2s)
+    fold0 ep2  train 0.4629  val 0.5043  val AUC 0.739  (2s)
+    fold0 ep3  train 0.4558  val 0.5210  val AUC 0.721  (1s)
+    fold0 temperature T=1.000  test n=1223
+    fold1 ep0  train 0.5402  val 0.5365  val AUC 0.692  (1s)
+    fold1 ep1  train 0.4759  val 0.5084  val AUC 0.731  (1s)
+    fold1 ep2  train 0.4667  val 0.5196  val AUC 0.716  (1s)
+    fold1 ep3  train 0.4606  val 0.5180  val AUC 0.726  (1s)
+    fold1 temperature T=0.968  test n=1582
+    fold2 ep0  train 0.5031  val 0.6823  val AUC 0.701  (1s)
+    fold2 ep1  train 0.4333  val 0.6717  val AUC 0.713  (1s)
+    fold2 ep2  train 0.4255  val 0.6564  val AUC 0.716  (1s)
+    fold2 ep3  train 0.4238  val 0.6832  val AUC 0.724  (1s)
+    fold2 temperature T=1.859  test n=1247
+    fold3 ep0  train 0.5355  val 0.5302  val AUC 0.692  (2s)
+    fold3 ep1  train 0.4669  val 0.5121  val AUC 0.731  (2s)
+    fold3 ep2  train 0.4594  val 0.5244  val AUC 0.702  (1s)
+    fold3 ep3  train 0.4551  val 0.5206  val AUC 0.712  (2s)
+    fold3 temperature T=1.169  test n=1450
+  prosody:  OOF AUC 0.7250   AP 0.4246   ECE 0.0489
+
+--- fusion ---
+    fold0 ep0  train 0.4708  val 0.4764  val AUC 0.800  (40s)
+    fold0 ep1  train 0.3958  val 0.4622  val AUC 0.797  (40s)
+    fold0 ep2  train 0.3523  val 0.4859  val AUC 0.790  (40s)
+    fold0 ep3  train 0.3075  val 0.5285  val AUC 0.774  (40s)
+    fold0 temperature T=1.194  test n=1223
+    fold1 ep0  train 0.4868  val 0.4694  val AUC 0.793  (36s)
+    fold1 ep1  train 0.4108  val 0.4797  val AUC 0.799  (36s)
+    fold1 ep2  train 0.3594  val 0.4835  val AUC 0.796  (45s)
+    fold1 ep3  train 0.3217  val 0.4887  val AUC 0.783  (43s)
+    fold1 temperature T=1.106  test n=1582
+    fold2 ep0  train 0.4481  val 0.6540  val AUC 0.773  (49s)
+    fold2 ep1  train 0.3652  val 0.6074  val AUC 0.772  (49s)
+    fold2 ep2  train 0.3219  val 0.8005  val AUC 0.753  (46s)
+    fold2 ep3  train 0.2821  val 0.7138  val AUC 0.716  (46s)
+    fold2 temperature T=1.853  test n=1247
+    fold3 ep0  train 0.4769  val 0.4633  val AUC 0.797  (42s)
+    fold3 ep1  train 0.3915  val 0.4848  val AUC 0.775  (44s)
+    fold3 ep2  train 0.3456  val 0.5090  val AUC 0.767  (43s)
+    fold3 ep3  train 0.2973  val 0.5314  val AUC 0.781  (43s)
+    fold3 temperature T=0.970  test n=1450
+  fusion:  OOF AUC 0.7990   AP 0.5286   ECE 0.0366
+
+wrote /Users/niharikatyagi/Desktop/eot-detector/scripts/../artifacts/oof_predictions.parquet

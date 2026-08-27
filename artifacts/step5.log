@@ -1,0 +1,75 @@
+5502 decision points across 40 channels
+
+  ES2002a.Headset-0.wav      n=  30  f0_med= 113.7Hz    2.9s
+  ES2002a.Headset-1.wav      n= 199  f0_med= 213.4Hz    2.4s
+  ES2002a.Headset-2.wav      n=   6  f0_med= 111.3Hz    2.6s
+  ES2002a.Headset-3.wav      n= 181  f0_med= 110.3Hz    3.7s
+  ES2002b.Headset-0.wav      n= 207  f0_med= 130.3Hz    6.2s
+  ES2002b.Headset-1.wav      n= 236  f0_med= 194.8Hz    4.8s
+  ES2002b.Headset-2.wav      n=  71  f0_med= 110.4Hz    4.6s
+  ES2002b.Headset-3.wav      n= 293  f0_med= 111.9Hz    5.3s
+  ES2003a.Headset-0.wav      n=  74  f0_med= 125.9Hz    2.8s
+  ES2003a.Headset-1.wav      n= 126  f0_med= 110.8Hz    2.8s
+  ES2003a.Headset-2.wav      n=  61  f0_med=  97.6Hz    2.6s
+  ES2003a.Headset-3.wav      n=  30  f0_med= 108.9Hz    2.3s
+  ES2003b.Headset-0.wav      n= 209  f0_med= 124.9Hz    5.1s
+  ES2003b.Headset-1.wav      n= 299  f0_med= 112.7Hz    4.4s
+  ES2003b.Headset-2.wav      n= 211  f0_med= 102.6Hz    4.5s
+  ES2003b.Headset-3.wav      n=  90  f0_med= 112.3Hz    3.9s
+  IS1000a.Headset-0.wav      n= 100  f0_med= 144.9Hz    3.0s
+  IS1000a.Headset-1.wav      n= 318  f0_med= 124.1Hz    3.6s
+  IS1000a.Headset-2.wav      n=  92  f0_med= 133.3Hz    3.1s
+  IS1000a.Headset-3.wav      n=  83  f0_med= 127.1Hz    4.1s
+  IS1001a.Headset-0.wav      n= 206  f0_med= 112.6Hz    2.5s
+  IS1001a.Headset-1.wav      n=  72  f0_med= 113.0Hz    3.6s
+  IS1001a.Headset-2.wav      n=  35  f0_med= 117.1Hz    3.1s
+  IS1001a.Headset-3.wav      n=  27  f0_med= 116.1Hz    2.4s
+  IS1003b.Headset-0.wav      n= 154  f0_med= 133.7Hz    4.6s
+  IS1003b.Headset-1.wav      n= 158  f0_med= 136.0Hz    4.6s
+  IS1003b.Headset-2.wav      n= 269  f0_med= 138.6Hz    5.3s
+  IS1003b.Headset-3.wav      n= 169  f0_med= 135.7Hz    4.5s
+  TS3003a.Headset-0.wav      n= 401  f0_med= 122.2Hz    3.6s
+  TS3003a.Headset-1.wav      n=  29  f0_med= 121.3Hz    3.3s
+  TS3003a.Headset-2.wav      n=  12  f0_med= 102.8Hz    2.7s
+  TS3003a.Headset-3.wav      n=  75  f0_med= 117.5Hz    3.3s
+  TS3004a.Headset-0.wav      n= 210  f0_med=  98.1Hz    3.1s
+  TS3004a.Headset-1.wav      n= 104  f0_med= 119.3Hz    2.8s
+  TS3004a.Headset-2.wav      n=  59  f0_med= 120.6Hz    2.6s
+  TS3004a.Headset-3.wav      n= 109  f0_med= 134.7Hz    3.5s
+  TS3005a.Headset-0.wav      n= 201  f0_med= 128.8Hz    3.0s
+  TS3005a.Headset-1.wav      n=  97  f0_med= 238.1Hz    2.9s
+  TS3005a.Headset-2.wav      n= 105  f0_med= 117.0Hz    2.8s
+  TS3005a.Headset-3.wav      n=  94  f0_med= 116.7Hz    2.8s
+
+======================================================================
+wrote /Users/niharikatyagi/Desktop/eot-detector/scripts/../data/processed/prosody.parquet   rows=5502
+
+missing-rate per feature (high = window too short / unvoiced):
+contour_curv_300     45.2
+contour_r2_300       38.4
+contour_slope_300    38.4
+contour_curv_600     20.4
+contour_r2_600       18.0
+contour_slope_600    18.0
+f0_min               17.0
+f0_reset             17.0
+f0_max               17.0
+f0_slope             17.0
+f0_range             17.0
+f0_med               17.0
+f0_terminal          17.0
+art_rate              1.9
+i_slope               0.1
+i_tmax                0.1
+i_std                 0.1
+i_med                 0.1
+i_max                 0.1
+voiced_frac           0.0
+
+feature means by label:
+           art_rate  i_med  i_slope  f0_range  f0_slope  f0_reset  contour_curv_600  voiced_frac  win_len
+label                                                                                                    
+change        4.251 -0.448   -1.805     5.221    18.049     0.192            32.033        0.349    0.533
+com-hold      2.671 -0.314   -2.091     4.333    -1.353    -0.031            13.285        0.377    0.565
+in-hold       2.586 -0.282   -2.128     4.125     2.320    -0.122            17.673        0.371    0.558
+trail-off     3.982 -0.412   -1.868     5.020    -1.370     0.025             5.056        0.383    0.532
