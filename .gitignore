@@ -16,3 +16,4 @@ data/processed/pauses/
 artifacts/*.pt
 artifacts/*.parquet
 docs/papers/*.pdf
+*.bak
