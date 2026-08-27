@@ -1,0 +1,201 @@
+#!/usr/bin/env python3
+"""
+Step 4 — assemble the decision-point table with the 2x2 turn-taking labels.
+
+A DECISION POINT is any moment a real endpointer would have to make a call:
+speech from the current speaker has just stopped and a pause has begun. There
+are two sources, and we need both:
+
+  1. TURN-END points   — from the annotations. The speaker's annotated stretch
+                         ended. The floor may or may not have changed.
+  2. INTERNAL points   — from the VAD. The speaker paused > 150 ms *inside* a
+                         stretch and then carried on. Invisible in the
+                         annotations; recovered in step 3.
+
+For each point we record what a live system would know (the transcript so far,
+how long the pause has lasted, where in the audio to measure prosody) and what
+only hindsight knows (did the floor actually change) — the label.
+
+Output: data/processed/decision_points.parquet
+"""
+import os, sys, json, glob
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
+import pandas as pd
+from data.ami_ipu import load_meeting, label_ipus
+from data.ami_meta import parse_meetings
+from features.syntax import is_syntactically_complete, label_2x2
+
+ROOT = os.path.join(os.path.dirname(__file__), "..")
+ANN = os.path.join(ROOT, "data/raw/ami_annotations")
+PAU = os.path.join(ROOT, "data/processed/pauses")
+OUT = os.path.join(ROOT, "data/processed/decision_points.parquet")
+
+MAX_CONTEXT_WORDS = 40   # what the text encoder sees; a live ASR partial is short
+
+
+def turn_index(ipus):
+    """
+    Group a speaker's IPUs into TURNS. A new turn begins after any IPU where the
+    floor changed away. Within a turn the transcript accumulates — which is what
+    a live system has: everything the user has said since it last replied.
+    """
+    turns, cur = [], []
+    for ipu in ipus:
+        cur.append(ipu)
+        if ipu.floor_changes:
+            turns.append(cur)
+            cur = []
+    if cur:
+        turns.append(cur)
+    return turns
+
+
+def words_before(turn_ipus, t):
+    """Every word token in this turn that finished at or before time t."""
+    out = []
+    for ipu in turn_ipus:
+        for tok in ipu.tokens:
+            if tok.kind == "word" and tok.end <= t + 1e-6:
+                out.append(tok)
+    return out
+
+
+def tail_flags(turn_ipus, t):
+    """Was the last thing before the pause a truncated word or a disfluency?"""
+    toks = [tk for ipu in turn_ipus for tk in ipu.tokens if tk.start <= t + 1e-6]
+    toks = toks[-3:]
+    return (any(tk.trunc for tk in toks[-2:]),
+            any(tk.kind == "disf" for tk in toks[-2:]))
+
+
+SNAP_TOL = 0.60   # a turn-end we cannot align to a VAD offset within this is dropped
+
+
+def snap_to_vad(t_ann, speech):
+    """
+    Put EVERY decision point on the same clock.
+
+    Internal pauses come from the VAD (speech offset). Turn ends come from the
+    annotation (a forced aligner's word-end time). Those two are not the same
+    instant: the aligner tiles words to fill a transcriber segment, while the
+    VAD fires on actual energy decay. Left alone, the label classes would be
+    perfectly separable by *which detector timestamped them* — the prosody
+    window would be anchored differently per class and the model would learn the
+    detector, not turn-taking. It would score well and mean nothing.
+
+    So we snap each annotated turn end onto the offset of the VAD speech span it
+    falls in (or the nearest one ending just before it), and drop the point if
+    nothing is within SNAP_TOL.
+    """
+    best, best_d = None, float("inf")
+    for s0, s1 in speech:
+        if s0 - 1e-6 <= t_ann <= s1 + SNAP_TOL:
+            d = abs(s1 - t_ann)
+            if d < best_d:
+                best, best_d = s1, d
+        elif s1 <= t_ann:
+            d = t_ann - s1
+            if d < best_d and d <= SNAP_TOL:
+                best, best_d = s1, d
+    return best
+
+
+def main():
+    meta = parse_meetings(os.path.join(ANN, "corpusResources/meetings.xml"))
+    rows = []
+    n_unsnapped = [0]
+
+    for pfile in sorted(glob.glob(os.path.join(PAU, "*.json"))):
+        pdata = json.load(open(pfile))
+        mtg = pdata["meeting"]
+        by_spk = load_meeting(ANN, mtg)
+        label_ipus(by_spk)
+        gname = {s.agent: s.global_name for s in meta.get(mtg, [])}
+        group = mtg[:6]   # ES2002a -> ES2002 : the same four people
+
+        for spk, ipus in sorted(by_spk.items()):
+            turns = turn_index(ipus)
+            sinfo = pdata["speakers"].get(spk, {})
+            internal = sinfo.get("internal_pauses", [])
+            speech = [tuple(x) for x in sinfo.get("speech", [])]
+
+            for turn in turns:
+                t_lo, t_hi = turn[0].start, turn[-1].end
+
+                # -- decision points inside this turn (VAD) + at its end (annotation)
+                pts = [(p["t_decision"], p["pause_dur"], False, "internal")
+                       for p in internal if t_lo <= p["t_decision"] <= t_hi]
+                last = turn[-1]
+                t_snap = snap_to_vad(last.end, speech)
+                if t_snap is not None:
+                    # resume/handover delay measured from the SAME instant we
+                    # anchored the point to, so it is comparable across classes
+                    delay = last.pause_dur + (last.end - t_snap)
+                    pts.append((t_snap, delay, last.floor_changes, "turn_end"))
+                else:
+                    n_unsnapped[0] += 1
+
+                for t_dec, resume_delay, floor_changes, src in sorted(pts):
+                    # non-finite = nothing followed (end of meeting); unusable
+                    if not (resume_delay == resume_delay and abs(resume_delay) < 1e6):
+                        continue
+                    words = words_before(turn, t_dec)
+                    if not words:
+                        continue
+                    text = " ".join(w.text for w in words)[-600:]
+                    ctx = " ".join(w.text for w in words[-MAX_CONTEXT_WORDS:])
+
+                    trunc, disf = tail_flags(turn, t_dec)
+                    complete = is_syntactically_complete(ctx, trunc, disf)
+                    lab = label_2x2(floor_changes, complete)
+                    if lab is None:
+                        continue
+
+                    rows.append(dict(
+                        meeting=mtg, group=group, speaker=spk,
+                        global_name=gname.get(spk, ""),
+                        source=src,
+                        t_decision=round(t_dec, 3),
+                        # NOT A FEATURE. This is the evaluation variable: how long
+                        # until speech resumed / the other speaker took over. At
+                        # inference the elapsed pause is the clock we are racing,
+                        # never an input. See docs/06_leakage.md.
+                        resume_delay=round(float(resume_delay), 3),
+                        turn_start=round(t_lo, 3),
+                        text=ctx,
+                        n_words=len(words),
+                        ends_truncated=trunc, ends_disfluency=disf,
+                        syn_complete=bool(complete),
+                        floor_changes=bool(floor_changes),
+                        label=lab,
+                        # exclusions, applied later so we can report what we dropped
+                        overlap_at_end=bool(last.overlap_at_end) if src == "turn_end" else False,
+                        ends_in_laugh=bool(last.ends_in_laugh) if src == "turn_end" else False,
+                        is_question=bool(last.is_question) if src == "turn_end" else False,
+                        wav=f"{mtg}.Headset-{[s.channel for s in meta.get(mtg,[]) if s.agent==spk][0]}.wav"
+                            if any(s.agent == spk for s in meta.get(mtg, [])) else "",
+                    ))
+        print(f"  {mtg}: running total {len(rows)}", flush=True)
+
+    df = pd.DataFrame(rows)
+    df.to_parquet(OUT, index=False)
+
+    print("\n" + "=" * 66)
+    print(f"decision points: {len(df)}   ->  {OUT}")
+    print(f"speakers: {df.global_name.nunique()}   groups: {df.group.nunique()}\n")
+
+    print("THE 2x2 (rows = did the floor change, cols = syntactically complete)")
+    print(pd.crosstab(df.floor_changes, df.syn_complete,
+                      rownames=["floor_changes"], colnames=["syn_complete"]), "\n")
+    print("label counts")
+    print(df.label.value_counts().to_string(), "\n")
+    print("by source")
+    print(pd.crosstab(df.source, df.label).to_string(), "\n")
+    print(f"turn-ends dropped (no VAD offset within {SNAP_TOL}s): {n_unsnapped[0]}\n")
+    print("resume / handover delay (s) by label  [EVALUATION VARIABLE, not a feature]")
+    print(df.groupby("label").resume_delay.describe()[["count", "25%", "50%", "75%"]].to_string())
+
+
+if __name__ == "__main__":
+    main()
